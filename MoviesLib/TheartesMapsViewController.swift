@@ -22,6 +22,9 @@ class TheartesMapsViewController: UIViewController {
     var theater: Theater!
     var theaters: [Theater] = []
     lazy var locationManager = CLLocationManager()
+    var poiAnnotation: [MKPointAnnotation] = []
+    
+    
     
     
     
@@ -192,6 +195,40 @@ extension TheartesMapsViewController: CLLocationManagerDelegate {
         
         
         mapView.setRegion(regiao, animated: true)
+        
+    }
+    
+}
+
+//MARK - UISearchBarDelegate
+
+extension TheartesMapsViewController: UISearchBarDelegate {
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        
+        let request = MKLocalSearchRequest()
+        request.naturalLanguageQuery = searchBar.text!
+        request.region = mapView.region
+        
+        let search = MKLocalSearch(request: request)
+        
+        search.start { (response, error) in
+            if error == nil{
+                guard let response = response else {return}
+                self.mapView.removeAnnotations(self.poiAnnotation)
+                self.poiAnnotation.removeAll()
+                for item in response.mapItems {
+                   let place = MKPointAnnotation()
+                    place.coordinate = item.placemark.coordinate
+                    place.title = item.name
+                    place.subtitle = item.phoneNumber
+                    self.poiAnnotation.append(place)
+                }
+                self.mapView.addAnnotations(self.poiAnnotation)
+            }
+        }
+        
+        
         
     }
     
